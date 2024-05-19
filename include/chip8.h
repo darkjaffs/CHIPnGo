@@ -130,7 +130,7 @@ void chip8_set_refresh_freq(CHIP8 *chip8, unsigned long refresh_freq);
 void chip8_load_font(CHIP8 *chip8);
 
 // Loads a given ROM into memory.
-// bool chip8_load_rom(CHIP8 *chip8);
+bool chip8_load_rom(CHIP8 *chip8);
 
 /* Performs a full cycle of the emulator including executing an instruction and
 handling timers. Returns true if instruction was executed

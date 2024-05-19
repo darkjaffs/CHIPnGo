@@ -78,9 +78,11 @@ bool init_emulator(void) {
 }
 
 void load_rom(int rom_num) {
-    uint32_t start_sector = rom_num * 8;
-    sd_read_block(start_sector, metadata);
-    sd_read_blocks(start_sector + 1, chip8.RAM + PC_START_ADDR_DEFAULT, 7);
+
+    chip8_load_rom(&chip8);
+    // uint32_t start_sector = rom_num * 8;
+    // sd_read_block(start_sector, metadata);
+    // sd_read_blocks(start_sector + 1, chip8.RAM + PC_START_ADDR_DEFAULT, 7);
 }
 
 bool process_metadata(void) {
@@ -277,11 +279,12 @@ int main(void) {
     buttons_init();
 
     clock_start();
-
-    select_rom();
+    //chip8_load_rom(&chip8);
+    //select_rom();
     init_emulator();
 
     while (1) {
+        chip8_load_rom(&chip8);
         handle_input();
         chip8_cycle(&chip8);
         handle_sound();

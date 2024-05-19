@@ -4,7 +4,7 @@
 
 #define MHz 1000000
 
-#define DEAULT_CLK_SPEED (9 * MHz)
+#define DEAULT_CLK_SPEED (8 * MHz)
 
 #define RCC 0x40021000
 #define FLASH 0x40022000
@@ -77,7 +77,7 @@ void set_sysclk(int mhz) {
         ;  // Wait for sysclk
 
     CLOCK_SPEED = mhz * MHz;
-    APB2_CLOCK_SPEED = CLOCK_SPEED * 2;
-    ADC_CLOCK_SPEED = CLOCK_SPEED * 2;
-    AHB_CLOCK_SPEED = CLOCK_SPEED * 2;
+    APB2_CLOCK_SPEED = CLOCK_SPEED;
+    ADC_CLOCK_SPEED = CLOCK_SPEED;
+    AHB_CLOCK_SPEED = CLOCK_SPEED;
 }
