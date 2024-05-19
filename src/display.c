@@ -1,5 +1,5 @@
 #include "display.h"
-
+#include "stdbool.h"
 #include <ctype.h>
 
 #include "delay.h"
@@ -10,6 +10,47 @@
 // A0: A8
 // SDA: B15
 // RST: B14
+
+#define SSD1306_LCDWIDTH 128
+#define SSD1306_LCDHEIGHT 64
+
+#define SSD1306_SETCONTRAST 0x81
+#define SSD1306_DISPLAYALLON_RESUME 0xA4
+#define SSD1306_DISPLAYALLON 0xA5
+#define SSD1306_NORMALDISPLAY 0xA6
+#define SSD1306_INVERTDISPLAY 0xA7
+#define SSD1306_DISPLAYOFF 0xAE
+#define SSD1306_DISPLAYON 0xAF
+#define SSD1306_SETDISPLAYOFFSET 0xD3
+#define SSD1306_SETCOMPINS 0xDA
+#define SSD1306_SETVCOMDETECT 0xDB
+#define SSD1306_SETDISPLAYCLOCKDIV 0xD5
+#define SSD1306_SETPRECHARGE 0xD9
+#define SSD1306_SETMULTIPLEX 0xA8
+#define SSD1306_SETLOWCOLUMN 0x00
+#define SSD1306_SETHIGHCOLUMN 0x10
+#define SSD1306_SETSTARTLINE 0x40
+#define SSD1306_MEMORYMODE 0x20
+#define SSD1306_COLUMNADDR 0x21
+#define SSD1306_PAGEADDR 0x22
+#define SSD1306_COMSCANINC 0xC0
+#define SSD1306_COMSCANDEC 0xC8
+#define SSD1306_SEGREMAP 0xA0
+#define SSD1306_CHARGEPUMP 0x8D
+#define SSD1306_EXTERNALVCC 0x1
+#define SSD1306_SWITCHCAPVCC 0x2
+
+#define SSD1306_PAGESTARTADDRESS 0xB0
+
+// Scrolling
+#define SSD1306_ACTIVATE_SCROLL 0x2F
+#define SSD1306_DEACTIVATE_SCROLL 0x2E
+#define SSD1306_SET_VERTICAL_SCROLL_AREA 0xA3
+#define SSD1306_RIGHT_HORIZONTAL_SCROLL 0x26
+#define SSD1306_LEFT_HORIZONTAL_SCROLL 0x27
+#define SSD1306_VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL 0x29
+#define SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL 0x2A
+
 
 #define SPI_CLK (1 << 14)
 #define SPI2_START 0x40003800
@@ -104,8 +145,8 @@ static void _gpio_init(void) {
     GPIOB_CRH &= ~((1 << 18) | (1 << 22) | (1 << 26) | (1 << 30));
 
     // MODEy (A8, B12, B13, B14, B15 2MHz out)
-    GPIOA_CRH |= (1 << 1);
-    GPIOB_CRH |= ((1 << 17) | (1 << 21) | (1 << 25) | (1 << 29));
+    GPIOA_CRH |= (3 << 0);
+    GPIOB_CRH |= ((3 << 16) | (3 << 20) | (3 << 24) | (3 << 28));
 
     // CNFy (B12, B13, B15 alt out, A8, B14 gpo)
     GPIOB_CRH |= ((1 << 19) | (1 << 23) | (1 << 31));
@@ -116,12 +157,16 @@ static void _spi_init(void) {
     for (volatile int i = 0; i < 10; i++)
         ;
 
-    SPI2_CR1 |= (3 << 3);   // CLK / 16 (fastest speed that works)
+    SPI2_CR1 |= (1 << 3);   // Prescaler 
     SPI2_CR2 |= (1 << 2);   // Enable SS output
     SPI2_CR1 |= (1 << 15);  // 1 line mode
     SPI2_CR1 |= (1 << 14);  // Transmit-only
     SPI2_CR1 |= (1 << 2);   // Set as master
     SPI2_CR1 |= (1 << 6);   // Enable
+    // SPI2_CR1 |= (0 << 0);
+    // SPI2_CR1 |= (0 << 1);
+    // SPI2_CR1 |= (0 << 7);
+
 }
 
 static void _display_write(uint8_t data) {
@@ -157,9 +202,38 @@ void display_init(void) {
     // Couldn't find much explanation in datasheet
     display_send_cmd(0x28 | 0x7);
 
+    
+
+    display_send_cmd(SSD1306_DISPLAYOFF);            // 0xAE
+    display_send_cmd(SSD1306_SETDISPLAYCLOCKDIV);    // 0xD5
+    display_send_cmd(0x80);                          // the suggested ratio
+    display_send_cmd(SSD1306_SETMULTIPLEX);          // 0xA8
+    display_send_cmd(SSD1306_LCDHEIGHT - 1);
+    display_send_cmd(SSD1306_SETDISPLAYOFFSET);      // 0xD3
+    display_send_cmd(0x0);                           // no offset
+    display_send_cmd(SSD1306_SETSTARTLINE | 0x0);    // line #0
+    display_send_cmd(SSD1306_CHARGEPUMP);            // 0x8D
+    display_send_cmd(0x14);
+    display_send_cmd(SSD1306_MEMORYMODE);            // 0x20
+    display_send_cmd(0x00);                          // 0x0 act like ks0108
+    display_send_cmd(SSD1306_SEGREMAP | 0x1);
+    display_send_cmd(SSD1306_COMSCANDEC);
+    display_send_cmd(SSD1306_SETCOMPINS);            // 0xDA
+    display_send_cmd(0x12);
+    display_send_cmd(SSD1306_SETCONTRAST);           // 0x81
+    display_send_cmd(0xCF);
+    display_send_cmd(SSD1306_SETPRECHARGE);          // 0xd9
+    display_send_cmd(0xF1);
+    display_send_cmd(SSD1306_SETVCOMDETECT);         // 0xDB
+    display_send_cmd(0x40);
+    display_send_cmd(SSD1306_DISPLAYALLON_RESUME);   // 0xA4
+    display_send_cmd(SSD1306_NORMALDISPLAY);         // 0xA6
+    display_send_cmd(SSD1306_DEACTIVATE_SCROLL);
+    display_send_cmd(SSD1306_DISPLAYON);          // turn on oled panel
+
     // Zero out display RAM and turn on
     display_clear();
-    display_send_cmd(DISPLAY_ON);
+   
 }
 
 void display_send_data(uint8_t data) {

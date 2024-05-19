@@ -86,6 +86,7 @@ typedef struct CHIP8 {
         -6: Collision Enumeration
         -7: Collision with Bottom of Screen
     */
+   // Since CHIP-8 is not similar to S-CHIP like display etc it may cause wierd glitches so we have this.
     bool quirks[NUM_QUIRKS];
 
     // Used to signal to main to update the display.

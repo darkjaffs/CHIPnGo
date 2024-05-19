@@ -130,7 +130,7 @@ void chip8_load_font(CHIP8 *chip8) {
     memcpy(chip8->RAM + FONT_START_ADDR, font_data, sizeof(font_data));
 }
 
-/*bool chip8_load_rom(CHIP8 *chip8)
+bool chip8_load_rom(CHIP8 *chip8)
 {
     // Using a hardcoded ROM for nows
     static const uint8_t rom[] = {
@@ -156,7 +156,7 @@ void chip8_load_font(CHIP8 *chip8) {
 
     memcpy(chip8->RAM + chip8->pc_start_addr, rom, MAX_RAM - chip8->pc_start_addr);
     return true;
-}*/
+}
 
 bool chip8_cycle(CHIP8 *chip8) {
     bool executed = false;

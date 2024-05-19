@@ -272,7 +272,7 @@ int main(void) {
     display_init();
     show_splash();
 
-    handle_sd();
+    //handle_sd();
 
     buttons_init();
 

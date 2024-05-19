@@ -4,7 +4,7 @@
 
 #define MHz 1000000
 
-#define DEAULT_CLK_SPEED (8 * MHz)
+#define DEAULT_CLK_SPEED (9 * MHz)
 
 #define RCC 0x40021000
 #define FLASH 0x40022000
@@ -59,7 +59,7 @@ void set_sysclk(int mhz) {
 
     // If desired speed is over 36 mhz, set APB1 divider to 2
     if (mhz > 36) {
-        RCC_CFGR |= (4 << 8);
+        RCC_CFGR |= ( 4 << 8);
         APB1_CLOCK_SPEED = (mhz / 2) * MHz;
     } else {
         RCC_CFGR &= ~(0x07 << 8);
@@ -77,7 +77,7 @@ void set_sysclk(int mhz) {
         ;  // Wait for sysclk
 
     CLOCK_SPEED = mhz * MHz;
-    APB2_CLOCK_SPEED = CLOCK_SPEED;
-    ADC_CLOCK_SPEED = CLOCK_SPEED;
-    AHB_CLOCK_SPEED = CLOCK_SPEED;
+    APB2_CLOCK_SPEED = CLOCK_SPEED * 2;
+    ADC_CLOCK_SPEED = CLOCK_SPEED * 2;
+    AHB_CLOCK_SPEED = CLOCK_SPEED * 2;
 }
